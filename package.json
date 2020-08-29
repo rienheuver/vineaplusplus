@@ -1,0 +1,24 @@
+{
+  "name": "vineaplusplus",
+  "version": "1.0.0",
+  "description": "mijnreisleiding.nl but better",
+  "main": "index.js",
+  "repository": "https://github.com/rienheuver/vineaplusplus",
+  "author": "Rien Heuver",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^5.1.0",
+    "nodemon": "^2.0.4",
+    "normalize.css": "^8.0.1",
+    "puppeteer": "^5.2.1"
+  },
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "nodemonConfig": {
+    "ext": "css,html,js,handlebars"
+  }
+}
