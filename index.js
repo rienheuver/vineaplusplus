@@ -15,7 +15,7 @@ app.get('/', async (req, res) => {
   res.render('home');
 });
 
-app.post('/credentials', async (req, res) => {
+app.post('/camps', async (req, res) => {
   const data = await getData(req.body.username, req.body.password);
   // res.json({data});
   res.render('data', {data});

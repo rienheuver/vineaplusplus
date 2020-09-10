@@ -8,44 +8,46 @@
 
 {{#each data}}
 <div class="camp" data-tab="{{@index}}">
-  <table class="order-column stripe">
-    <thead>
-      <tr>
-        <th>Naam</th>
-        <th>Adres</th>
-        <th>Geslacht</th>
-        <th>Geboortedatum</th>
-        <th>Leeftijd</th>
-        <th>Kamp</th>
-        <th>Dieet</th>
-        <th>Gezondheid</th>
-        <th>Opmerkingen</th>
-        <th>Van/tot</th>
-        <th>Opstap/uitstap</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each this}}
-      <tr>
-        <td>{{this.naam}}</td>
-        <td>{{this.adres}}</td>
-        <td>{{this.geslacht}}</td>
-        <td>{{this.geboorteDatum}}</td>
-        <td>{{this.leeftijd}}</td>
-        <td>{{this.vakantie}}</td>
-        <td>{{this.dieet}}</td>
-        <td>{{this.gezondheid}}</td>
-        <td>{{this.comments}}</td>
-        <td>{{this.vertrek_terug}}</td>
-        <td>{{this.opstap_uitstap}}</td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
+  <div class="meta">
+    <span>Aantal deelnemers: {{this.participantCount}}</span>
+    <span>Aantal vrouw: {{this.womenCount}}</span>
+    <span>Aantal man: {{this.menCount}}</span>
+    <span>Gemiddelde leeftijd: {{this.averageAge}}</span>
+  </div>
+  <div class="header">
+    <span onclick="sortBy('naam', event)">Naam</span>
+    <span onclick="sortBy('adres', event)">Adres</span>
+    <span onclick="sortBy('geslacht', event)">Geslacht</span>
+    <span onclick="sortBy('geboorteDatum', event)">Geboortedatum</span>
+    <span onclick="sortBy('leeftijd', event)">Leeftijd</span>
+    <span onclick="sortBy('vakantie', event)">Kamp</span>
+    <span onclick="sortBy('dieet', event)">Dieet</span>
+    <span onclick="sortBy('gezondheid', event)">Gezondheid</span>
+    <span onclick="sortBy('comments', event)">Opmerkingen</span>
+    <span onclick="sortBy('vertrek_terug', event)">Van/tot</span>
+    <span onclick="sortBy('opstap_uitstap', event)">Opstap/uitstap</span>
+  </div>
+  <div class="rows">
+    {{#each this.participants}}
+    <div class="row" data-participant="{{this.json}}">
+      <span onclick="toggleParticipant(event)">{{this.naam}}</span>
+      <span>{{this.adres}}</span>
+      <span>{{this.geslacht}}</span>
+      <span>{{this.geboorteDatum}}</span>
+      <span>{{this.leeftijd}}</span>
+      <span>{{this.vakantie}}</span>
+      <span>{{this.dieet}}</span>
+      <span>{{this.gezondheid}}</span>
+      <span>{{this.comments}}</span>
+      <span>{{this.vertrek_terug}}</span>
+      <span>{{this.opstap_uitstap}}</span>
+    </div>
+    {{/each}}
+  </div>
 </div>
 {{/each}}
 <script>
-  function openTab(evt, index) {
+  function openTab(event, index) {
     const camps = document.querySelectorAll(".camp");
     for (let i = 0; i < camps.length; i++) {
       camps[i].style.display = "none";
@@ -57,14 +59,38 @@
     }
 
     document.querySelector(`[data-tab="${index}"]`).style.display = "block";
-    evt.currentTarget.className += " active";
+    event.currentTarget.className += " active";
   }
 
-  $(document).ready(function () {
-    $('table').DataTable({
-      paging: false
+  function sortBy(property, event) {
+    const camp = event.currentTarget.parentNode.parentNode;
+    const rows = camp.querySelector('.rows');
+    const participants = Array.from(rows.querySelectorAll('.row'));
+    participants.sort((p1, p2) => {
+      return JSON.parse(p1.dataset.participant)[property] > JSON.parse(p2.dataset.participant)[property] ? -1 : 1;
     });
 
-    openTab(0);
-  });
+    const sortUp = event.currentTarget.className.includes('sortUp');
+    if (sortUp) {
+      participants.reverse();
+    }
+
+    const sortBys = camp.querySelectorAll(".header span");
+    for (i = 0; i < sortBys.length; i++) {
+      sortBys[i].className = sortBys[i].className.replace(" sortUp", "").replace(" sortUp", "");
+    }
+    event.currentTarget.className += sortUp ? " sortDown" : " sortUp";
+
+    for (let i = 0; i < participants.length; i++) {
+      rows.appendChild(participants[i]);
+    }
+  }
+
+  function toggleParticipant(event) {
+    const row = event.currentTarget.parentNode;
+    const columns = row.querySelectorAll('span');
+    columns.forEach(c => {
+      c.style.display = c.style.display == "block" ? "" : "block";
+    })
+  }
 </script>

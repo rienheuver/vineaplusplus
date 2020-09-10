@@ -1,14 +1,14 @@
-const puppeteer = require('puppeteer');
-const { json } = require('body-parser');
+const puppeteer = require("puppeteer");
+const { json } = require("body-parser");
 
 module.exports.getData = async function (username, password) {
-  console.log('Launching headless browser');
+  console.log("Launching headless browser");
   const browser = await puppeteer.launch({
     headless: true,
   });
   const page = await browser.newPage();
-  console.log('Visiting mijnreisleiding.nl');
-  await page.goto('http://mijnreisleiding.nl', { waitUntil: 'networkidle2' });
+  console.log("Visiting mijnreisleiding.nl");
+  await page.goto("http://mijnreisleiding.nl", { waitUntil: "networkidle2" });
   await page.waitForSelector('input[type="password"]');
 
   await page.focus('input[type="text"]');
@@ -20,17 +20,17 @@ module.exports.getData = async function (username, password) {
   await page.click('button[type="submit"');
   console.log(`Logging in with user ${username}`);
 
-  await page.waitForSelector('.navbar-nav');
+  await page.waitForSelector(".navbar-nav");
 
   console.log(`Analysing camp roster`);
-  await page.goto('http://mijnreisleiding.nl/jouwrooster', {
-    waitUntil: 'networkidle2',
+  await page.goto("http://mijnreisleiding.nl/jouwrooster", {
+    waitUntil: "networkidle2",
   });
 
   const campsMeta = await page.evaluate(() => {
-    return Array.from(document.querySelectorAll('.order_box > a[href]')).map(
+    return Array.from(document.querySelectorAll(".order_box > a[href]")).map(
       (a) => {
-        const parts = a.href.split('/');
+        const parts = a.href.split("/");
         return [parts[parts.length - 1], a.innerText];
       }
     );
@@ -42,22 +42,22 @@ module.exports.getData = async function (username, password) {
       `Getting regular data on camp with ID ${c[0]} at https://www.mijnreisleiding.nl/participantlist/${c[0]}`
     );
     await page.goto(`https://www.mijnreisleiding.nl/participantlist/${c[0]}`, {
-      waitUntil: 'networkidle2',
+      waitUntil: "networkidle2",
     });
     const data = await page.evaluate(() => {
       const headers = Array.from(
-        document.querySelectorAll('.table_naw thead th')
+        document.querySelectorAll(".table_naw thead th")
       ).map((el) =>
         el.innerText
           .toLowerCase()
-          .replace('&', '')
-          .replace(' ', '_')
-          .replace(' ', '')
+          .replace("&", "")
+          .replace(" ", "_")
+          .replace(" ", "")
       );
-      return Array.from(document.querySelectorAll('.table_naw tbody tr')).map(
+      return Array.from(document.querySelectorAll(".table_naw tbody tr")).map(
         (row) => {
-          const cells = Array.from(row.querySelectorAll('td')).map((td) => {
-            const parts = td.innerText.split('\n');
+          const cells = Array.from(row.querySelectorAll("td")).map((td) => {
+            const parts = td.innerText.split("\n");
             return parts.length > 1 ? parts : parts[0];
           });
           const jsonRow = {};
@@ -76,25 +76,25 @@ module.exports.getData = async function (username, password) {
     await page.goto(
       `https://www.mijnreisleiding.nl/participantlistadditional/${c[0]}`,
       {
-        waitUntil: 'networkidle2',
+        waitUntil: "networkidle2",
       }
     );
     const data2 = await page.evaluate(() => {
       const headers = Array.from(
-        document.querySelectorAll('.order_section .head div')
+        document.querySelectorAll(".order_section .head div")
       ).map((el) =>
         el.innerText
           .toLowerCase()
-          .replace('&', '')
-          .replace(' ', '_')
-          .replace(' ', '')
+          .replace("&", "")
+          .replace(" ", "_")
+          .replace(" ", "")
       );
 
-      return Array.from(document.querySelectorAll('.order_section .info')).map(
+      return Array.from(document.querySelectorAll(".order_section .info")).map(
         (row) => {
-          const cells = Array.from(row.querySelectorAll(':scope > div')).map(
+          const cells = Array.from(row.querySelectorAll(":scope > div")).map(
             (cell) => {
-              const parts = cell.innerText.split('\n');
+              const parts = cell.innerText.split("\n");
               return parts.length > 1 ? parts : parts[0];
             }
           );
@@ -103,17 +103,17 @@ module.exports.getData = async function (username, password) {
             if (headers[i]) {
               jsonRow[headers[i]] = cells[i];
             } else {
-              if (jsonRow['comments']) {
-                jsonRow['comments'] += ', ' + cells[i];
+              if (jsonRow["comments"]) {
+                jsonRow["comments"] += ", " + cells[i];
               } else {
-                jsonRow['comments'] = cells[i];
+                jsonRow["comments"] = cells[i];
               }
             }
           }
-          if (typeof jsonRow['comments'] === 'string') {
-            jsonRow['comments'] = jsonRow['comments'].replace(
+          if (typeof jsonRow["comments"] === "string") {
+            jsonRow["comments"] = jsonRow["comments"].replace(
               /(^[,\s]+)|([,\s]+$)/g,
-              ''
+              ""
             );
           }
           return jsonRow;
@@ -133,7 +133,7 @@ module.exports.getData = async function (username, password) {
       }
       const person = { ...partTwo, ...data2[i] };
       person.geboorteDatum = person.geboren[0];
-      const timeParts = person.geboorteDatum.split('-').map((t) => parseInt(t));
+      const timeParts = person.geboorteDatum.split("-").map((t) => parseInt(t));
       const birthday = new Date(
         timeParts[2],
         (timeParts[1] + 11) % 12,
@@ -142,21 +142,37 @@ module.exports.getData = async function (username, password) {
       person.leeftijd = Math.abs(
         new Date(new Date() - birthday.getTime()).getUTCFullYear() - 1970
       );
+
+      person.naam = person.naam[0].toUpperCase() + person.naam.substring(1);
+
       person.geslacht = person.naam_contactgevegens[
         person.naam_contactgevegens.length - 1
-      ].split(' ')[1];
+      ].split(" ")[1];
 
       Object.keys(person).map((key) => {
         if (Array.isArray(person[key])) {
-          person[key] = person[key].join(', ');
+          person[key] = person[key].join(", ");
         }
       });
+
+      person.json = JSON.stringify(person);
 
       fullData.push(person);
     }
 
     // camps.push(fullData);
-    camps[c[1]] = fullData;
+    const camp = {};
+    camp.participants = fullData;
+    camp.participantCount = camp.participants.length;
+    camp.womenCount = camp.participants.filter(
+      (p) => p.geslacht == "vrouw"
+    ).length;
+    camp.menCount = camp.participantCount - camp.womenCount;
+    camp.averageAge = (
+      camp.participants.reduce((total, p) => total + p.leeftijd, 0) /
+      camp.participantCount
+    ).toFixed(2);
+    camps[c[1]] = camp;
   }
 
   console.log(`Jobs done, got data on ${campsMeta.length} camps`);

@@ -1,5 +1,5 @@
 <h2>Inloggegevens</h2>
-<form method="post" action="/credentials">
+<form method="post" action="/camps" onsubmit="showLoader()">
   <div class="form-field">
     <label for="username">Emailadres</label>
     <input type="text" name="username" required>
@@ -9,4 +9,12 @@
     <input type="password" name="password">
   </div>
   <button type="submit">Data verzamelen</button>
+  <div class="loader"></div>
 </form>
+
+<script>
+  function showLoader() {
+    document.querySelector('button[type="submit"]').style.display = "none";
+    document.querySelector('.loader').style.display = "block";
+  }
+</script>

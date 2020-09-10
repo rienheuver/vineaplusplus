@@ -1,5 +1,7 @@
 :root {
   --main-colour: #ff6e40;
+  --second-colour: #044389;
+  --light-gray: #eee;
   --border-radius: 3px;
 }
 
@@ -38,6 +40,21 @@ button {
   cursor: pointer;
 }
 
+.loader {
+  display: none;
+  border: .2rem solid transparent;
+  border-top: .2rem solid var(--main-colour);
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 label {
   display: block;
   font-size: 1rem;
@@ -48,7 +65,7 @@ label {
   border: 0;
   width: 100%;
   padding: 1rem 0.5rem;
-  background-color: #eee;
+  background-color: var(--light-gray);
   box-sizing: border-box;
   border-radius: var(--border-radius);
 }
@@ -63,8 +80,89 @@ label {
   padding: 1rem;
   width: 100%;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .tab.active {
   background-color: var(--main-colour);
+}
+
+.camp {
+  display: none;
+}
+
+.camp .header,
+.camp .row {
+  display: flex;
+}
+
+.camp .meta {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--second-colour);
+  font-weight: bolder;
+  color: white;
+}
+
+.sortDown, .sortUp {
+  background-color: var(--second-colour);
+}
+
+.sortDown::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-right: .5rem solid transparent;
+  border-left: .5rem solid transparent;
+  border-bottom: .5rem solid white;
+  position: absolute;
+  margin-left: 1rem;
+  margin-top: .25rem;
+}
+.sortUp::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-right: .5rem solid transparent;
+  border-left: .5rem solid transparent;
+  border-top: .5rem solid white;
+  position: absolute;
+  margin-left: 1rem;
+  margin-top: .25rem;
+}
+
+.camp span {
+  flex: 1;
+  padding: 1rem;
+}
+
+.camp .header {
+  background-color: #333;
+  color: white;
+}
+
+.camp .header span {
+  cursor: pointer;
+}
+
+.camp .row:nth-child(odd) {
+  background-color: var(--light-gray);
+}
+
+@media (max-width: 1200px) {
+  .container {
+    min-width: unset;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .camp :not(.meta) span:not(:first-child) {
+    display: none;
+  }
+
+  .camp .row {
+    flex-direction: column;
+  }
 }
