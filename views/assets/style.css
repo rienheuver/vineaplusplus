@@ -28,6 +28,12 @@ h1 {
   margin-top: 1rem;
 }
 
+.error {
+  padding: 1rem;
+  color: red;
+  font-weight: bolder;
+}
+
 a.button,
 button {
   border: 0;
@@ -55,7 +61,7 @@ button {
   100% { transform: rotate(360deg); }
 }
 
-label {
+.form-field label {
   display: block;
   font-size: 1rem;
 }
@@ -68,6 +74,10 @@ label {
   background-color: var(--light-gray);
   box-sizing: border-box;
   border-radius: var(--border-radius);
+}
+
+form button {
+  display: block;
 }
 
 .tabs {

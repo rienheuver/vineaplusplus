@@ -77,7 +77,7 @@
 
     const sortBys = camp.querySelectorAll(".header span");
     for (i = 0; i < sortBys.length; i++) {
-      sortBys[i].className = sortBys[i].className.replace(" sortUp", "").replace(" sortUp", "");
+      sortBys[i].className = sortBys[i].className.replace(" sortUp", "").replace(" sortDown", "");
     }
     event.currentTarget.className += sortUp ? " sortDown" : " sortUp";
 

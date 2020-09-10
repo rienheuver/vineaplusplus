@@ -1,15 +1,28 @@
 <h2>Inloggegevens</h2>
 <form method="post" action="/camps" onsubmit="showLoader()">
+
+  {{#if error}}
+  <div class="error">
+    Error: {{error}}
+  </div>
+  {{/if}}
+  
   <div class="form-field">
     <label for="username">Emailadres</label>
     <input type="text" name="username" required>
   </div>
+
   <div class="form-field">
     <label for="password">Wachtwoord</label>
     <input type="password" name="password">
   </div>
+
+  <input type="checkbox" id="trust" name="trust" value="yes">
+  <label for="trust">Ik ken Rien persoonlijk en vertrouw hem volledig met mijn inloggegevens van
+    mijnreisleiding.nl</label>
   <button type="submit">Data verzamelen</button>
   <div class="loader"></div>
+
 </form>
 
 <script>
