@@ -2,30 +2,45 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { getData } = require("./helpers");
 const exphbs = require("express-handlebars");
+const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const app = express();
 
 app.engine("handlebars", exphbs());
+
 app.set("view engine", "handlebars");
 
 app.use(express.static("views/"));
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.get("/", async (req, res) => {
   res.render("home");
 });
 
+app.get("/data", async (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "data.html"));
+});
+
 app.post("/camps", async (req, res) => {
   if (req.body.trust && req.body.trust === "yes") {
-    const data = await getData(req.body.username, req.body.password);
+    const data = await getData(req.body.username, req.body.password, req.body.combine);
+    const camps = JSON.stringify(data);
+
     if (Object.keys(data).length === 0) {
-      res.render("home", {error: 'Geen kampen gevonden. Misschien verkeerde logingegevens?'});
+      res.render("home", {
+        error: "Geen kampen gevonden. Misschien verkeerde logingegevens?",
+      });
     } else {
-      // res.json({data});
-      res.render("data", { data });
+      res.render("storage", { camps });
+      // res.render("data", { data });
     }
   } else {
-    res.render("home", {error: "Als je Rien niet vertrouwt zal hij ook je gegevens niet gebruiken. Maar dan heeft deze app verder ook weinig nut..."});
+    res.render("home", {
+      error:
+        "Als je Rien niet vertrouwt zal hij ook je gegevens niet gebruiken. Maar dan heeft deze app verder ook weinig nut...",
+    });
   }
 });
 

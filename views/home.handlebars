@@ -2,32 +2,42 @@
 <form method="post" action="/camps" onsubmit="showLoader()">
 
   {{#if error}}
-  <div class="error">
-    Error: {{error}}
-  </div>
+    <div class="error">
+      Error:
+      {{error}}
+    </div>
   {{/if}}
-  
+
   <div class="form-field">
     <label for="username">Emailadres</label>
-    <input type="text" name="username" required>
+    <input type="text" name="username" required />
   </div>
 
   <div class="form-field">
     <label for="password">Wachtwoord</label>
-    <input type="password" name="password">
+    <input type="password" name="password" />
   </div>
 
-  <input type="checkbox" id="trust" name="trust" value="yes">
-  <label for="trust">Ik ken Rien persoonlijk en vertrouw hem volledig met mijn inloggegevens van
-    mijnreisleiding.nl</label>
+  <div class="checkbox">
+    <input type="checkbox" id="combine" name="combine" value="yes" />
+    <label for="combine">Kampen per week en locatie samenvoegen. (Dit is vast handig voor LC'ers ofzo.)</label>
+  </div>
+
+  <div class="checkbox">
+    <input type="checkbox" id="trust" name="trust" value="yes" />
+    <label for="trust">Ik ken Rien persoonlijk en vertrouw hem volledig met mijn
+      inloggegevens van mijnreisleiding.nl</label>
+  </div>
   <button type="submit">Data verzamelen</button>
   <div class="loader"></div>
 
 </form>
 
 <script>
-  function showLoader() {
-    document.querySelector('button[type="submit"]').style.display = "none";
-    document.querySelector('.loader').style.display = "block";
-  }
+  document.addEventListener('DOMContentLoaded', () => { if
+  (window.localStorage.getItem('vineacamps') !== null) {
+  window.location.replace('/data'); } }); function showLoader() {
+  document.querySelector('button[type="submit"]').style.display = "none"; const
+  error = document.querySelector(".error"); if (error) { error.style.display =
+  "none"; } document.querySelector('.loader').style.display = "block"; }
 </script>

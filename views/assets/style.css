@@ -1,8 +1,11 @@
 :root {
   --main-colour: #ff6e40;
   --second-colour: #044389;
+  --highlight-colour: #b4d7f9;
   --light-gray: #eee;
   --border-radius: 3px;
+  --dark-grey: #666;
+  --light-grey: #aaa;
 }
 
 body {
@@ -76,16 +79,25 @@ button {
   border-radius: var(--border-radius);
 }
 
+.checkbox {
+  padding: 1rem;
+}
+
 form button {
   display: block;
 }
 
-.tabs {
+.tip {
+  background-color: var(--highlight-colour);
+  border-radius: 5px;
+  padding: .5rem;
+}
+
+.tabs, .sub-tabs {
   display: flex;
 }
 
-.tab {
-  background-color: #666;
+.tab, .sub-tab {
   color: white;
   padding: 1rem;
   width: 100%;
@@ -93,20 +105,27 @@ form button {
   box-sizing: border-box;
 }
 
-.tab.active {
+.tab {
+  background-color: var(--dark-grey);
+}
+.sub-tab {
+  background-color: var(--light-grey);
+}
+
+.tab.active, .sub-tab.active {
   background-color: var(--main-colour);
 }
 
-.camp {
+.camp, .camp-group {
   display: none;
 }
 
-.camp .header,
-.camp .row {
+.camp-group .header,
+.camp-group .row {
   display: flex;
 }
 
-.camp .meta {
+.camp-group .meta {
   display: flex;
   flex-direction: column;
   background-color: var(--second-colour);
@@ -141,22 +160,26 @@ form button {
   margin-top: .25rem;
 }
 
-.camp span {
+.camp-group span {
   flex: 1;
   padding: 1rem;
 }
 
-.camp .header {
+.camp-group .header {
   background-color: #333;
   color: white;
 }
 
-.camp .header span {
+.camp-group .header span {
   cursor: pointer;
 }
 
-.camp .row:nth-child(odd) {
+.camp-group .row:nth-child(odd) {
   background-color: var(--light-gray);
+}
+
+.jarig {
+  font-size: 2rem;
 }
 
 @media (max-width: 1200px) {
@@ -168,11 +191,11 @@ form button {
     flex-direction: column;
   }
 
-  .camp :not(.meta) span:not(:first-child) {
+  .camp-group :not(.meta) span:not(:first-child) {
     display: none;
   }
 
-  .camp .row {
+  .camp-group .row {
     flex-direction: column;
   }
 }

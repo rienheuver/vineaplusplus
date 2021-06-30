@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
 const { json } = require("body-parser");
 
-module.exports.getData = async function (username, password) {
+module.exports.getData = async function (username, password, combine = false) {
   console.log("Launching headless browser");
   const browser = await puppeteer.launch({
     headless: true,
@@ -27,7 +27,7 @@ module.exports.getData = async function (username, password) {
     waitUntil: "networkidle2",
   });
 
-  const campsMeta = await page.evaluate(() => {
+  let campsMeta = await page.evaluate(() => {
     return Array.from(document.querySelectorAll(".order_box > a[href]")).map(
       (a) => {
         const parts = a.href.split("/");
@@ -36,8 +36,11 @@ module.exports.getData = async function (username, password) {
     );
   });
 
+  // campsMeta = [campsMeta[0]];
+
   const camps = {};
   for (const c of campsMeta) {
+    camps[c[1]] = {};
     console.log(
       `Getting regular data on camp with ID ${c[0]} at https://www.mijnreisleiding.nl/participantlist/${c[0]}`
     );
@@ -121,7 +124,22 @@ module.exports.getData = async function (username, password) {
       );
     });
 
+    const campGroups = [];
     const fullData = [];
+    const datesRegex = /(\d+)-(\d+)-(\d+)/g;
+    const startEnd = [...c[1].matchAll(datesRegex)];
+    const timePartsStart = startEnd[0][0].split("-").map((t) => parseInt(t));
+    const startDate = new Date(
+      timePartsStart[2],
+      (timePartsStart[1] + 11) % 12,
+      timePartsStart[0]
+    );
+    const timePartsEnd = startEnd[1][0].split("-").map((t) => parseInt(t));
+    const endDate = new Date(
+      timePartsEnd[2],
+      (timePartsEnd[1] + 11) % 12,
+      timePartsEnd[0]
+    );
     for (let i = 0; i < data2.length; i++) {
       const name = data2[i].naam;
       let partTwo;
@@ -134,20 +152,32 @@ module.exports.getData = async function (username, password) {
       const person = { ...partTwo, ...data2[i] };
       person.geboorteDatum = person.geboren[0];
       const timeParts = person.geboorteDatum.split("-").map((t) => parseInt(t));
-      const birthday = new Date(
+      const birthDate = new Date(
         timeParts[2],
         (timeParts[1] + 11) % 12,
         timeParts[0]
       );
-      person.leeftijd = Math.abs(
-        new Date(new Date() - birthday.getTime()).getUTCFullYear() - 1970
+      const birthday = new Date(
+        timePartsStart[2],
+        (timeParts[1] + 11) % 12,
+        timeParts[0]
       );
+      if (birthday >= startDate && birthday <= endDate) {
+        person.jarig = true;
+      }
+      person.leeftijd = Math.abs(
+        new Date(new Date() - birthDate.getTime()).getUTCFullYear() - 1970
+      );
+      
+      person.telefoon = person.naam_contactgevegens[1];
+      person.noodnummer = person.naam_contactgevegens.length > 3 ? person.naam_contactgevegens[2] : 'Onbekend';
 
       person.naam = person.naam[0].toUpperCase() + person.naam.substring(1);
 
-      person.geslacht = person.naam_contactgevegens[
-        person.naam_contactgevegens.length - 1
-      ].split(" ")[1];
+      person.geslacht =
+        person.naam_contactgevegens[
+          person.naam_contactgevegens.length - 1
+        ].split(" ")[1];
 
       Object.keys(person).map((key) => {
         if (Array.isArray(person[key])) {
@@ -155,24 +185,39 @@ module.exports.getData = async function (username, password) {
         }
       });
 
+      if (!campGroups.includes(person.vakantie)) {
+        campGroups.push(person.vakantie);
+      }
+
       person.json = JSON.stringify(person);
 
       fullData.push(person);
     }
 
     // camps.push(fullData);
-    const camp = {};
-    camp.participants = fullData;
-    camp.participantCount = camp.participants.length;
-    camp.womenCount = camp.participants.filter(
-      (p) => p.geslacht == "vrouw"
-    ).length;
-    camp.menCount = camp.participantCount - camp.womenCount;
-    camp.averageAge = (
-      camp.participants.reduce((total, p) => total + p.leeftijd, 0) /
-      camp.participantCount
-    ).toFixed(2);
-    camps[c[1]] = camp;
+    for (const campGroup of campGroups) {
+      const camp = {};
+      camp.participants = fullData.filter(
+        (person) => person.vakantie == campGroup
+      );
+      setCampMeta(camp);
+      camps[c[1]][campGroup] = camp;
+    }
+
+    if (combine) {
+      const camp = {
+        participants: [],
+      };
+      for (const group of Object.keys(camps[c[1]])) {
+        camp.participants = camp.participants.concat(
+          ...camps[c[1]][group].participants
+        );
+      }
+      setCampMeta(camp);
+      camps[c[1]] = {
+        "Alle kampen": camp,
+      };
+    }
   }
 
   console.log(`Jobs done, got data on ${campsMeta.length} camps`);
@@ -180,3 +225,16 @@ module.exports.getData = async function (username, password) {
 
   return camps;
 };
+
+function setCampMeta(camp) {
+  camp.participantCount = camp.participants.length;
+  camp.womenCount = camp.participants.filter(
+    (p) => p.geslacht == "vrouw"
+  ).length;
+  camp.menCount = camp.participantCount - camp.womenCount;
+  camp.averageAge = (
+    camp.participants.reduce((total, p) => total + p.leeftijd, 0) /
+    camp.participantCount
+  ).toFixed(2);
+  camp.birthdays = camp.participants.filter((p) => p.jarig).length;
+}

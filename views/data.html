@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vinea++</title>
+    <link rel="stylesheet" href="/assets/normalize.css" />
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Vinea++</h1>
+      <button onclick="reset()">Data verversen</button>
+      <p class="tip">Klik op een kolom om te sorteren, zoals leeftijd of naam. Ook heel handig voor dieet en gezondheid.</p>
+      <div class="handlebars-template">
+        <div class="tabs">
+          {{#each data}}
+          <div class="tab" onclick="openTab(event, {{@index}})">{{@key}}</div>
+          {{/each}}
+        </div>
+
+        {{#each data}}
+        <div class="camp" data-tab="{{@index}}">
+          <div class="sub-tabs">
+            {{#each this}}
+            <div
+              class="sub-tab"
+              onclick="openSubTab(event, '{{@../index}},{{@index}}')"
+            >
+              {{@key}}
+            </div>
+            {{/each}}
+          </div>
+          <div class="camp-groups">
+            {{#each this}}
+            <div class="camp-group" data-subtab="{{@../index}},{{@index}}">
+              <div class="meta">
+                <span>Aantal deelnemers: {{this.participantCount}}</span>
+                <span>Aantal vrouw: {{this.womenCount}}</span>
+                <span>Aantal man: {{this.menCount}}</span>
+                <span>Gemiddelde leeftijd: {{this.averageAge}}</span>
+                <span>Jarigen 🎉: {{this.birthdays}}</span>
+              </div>
+              <div class="header">
+                <span onclick="sortBy('naam', event)">Naam</span>
+                <span onclick="sortBy('adres', event)">Adres</span>
+                <span onclick="sortBy('telefoon', event)">Telefoon</span>
+                <span onclick="sortBy('noodnummer', event)">Noodnummer</span>
+                <span onclick="sortBy('geslacht', event)">Geslacht</span>
+                <span onclick="sortBy('geboorteDatum', event)"
+                  >Geboortedatum</span
+                >
+                <span onclick="sortBy('leeftijd', event)">Leeftijd</span>
+                <span onclick="sortBy('vakantie', event)">Kamp</span>
+                <span onclick="sortBy('dieet', event)">Dieet</span>
+                <span onclick="sortBy('gezondheid', event)">Gezondheid</span>
+                <span onclick="sortBy('comments', event)">Opmerkingen</span>
+                <span onclick="sortBy('vertrek_terug', event)">Van/tot</span>
+                <span onclick="sortBy('opstap_uitstap', event)"
+                  >Opstap/uitstap</span
+                >
+              </div>
+              <div class="rows">
+                {{#each this.participants}}
+                <div class="row" data-participant="{{this.json}}">
+                  <span onclick="toggleParticipant(event)">{{this.naam}} {{#if this.jarig}}<span class="jarig">🎉</span>{{/if}}</span>
+                  <span>{{this.adres}}</span>
+                  <span>{{this.telefoon}}</span>
+                  <span>{{this.noodnummer}}</span>
+                  <span>{{this.geslacht}}</span>
+                  <span>{{this.geboorteDatum}}</span>
+                  <span>{{this.leeftijd}}</span>
+                  <span>{{this.vakantie}}</span>
+                  <span>{{this.dieet}}</span>
+                  <span>{{this.gezondheid}}</span>
+                  <span>{{this.comments}}</span>
+                  <span>{{this.vertrek_terug}}</span>
+                  <span>{{this.opstap_uitstap}}</span>
+                </div>
+                {{/each}}
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const camps = window.localStorage.getItem("vineacamps");
+          if (camps === null) {
+            console.log("wtf doe je hier");
+          }
+          const handlebarsSection = document.querySelector(
+            ".handlebars-template"
+          );
+          const template = Handlebars.compile(handlebarsSection.innerHTML);
+          handlebarsSection.innerHTML = template({ data: JSON.parse(camps) });
+        });
+
+        function reset() {
+          window.localStorage.removeItem("vineacamps");
+          window.location.replace("/");
+        }
+
+        function openTab(event, index) {
+          const camps = document.querySelectorAll(".camp");
+          for (let i = 0; i < camps.length; i++) {
+            camps[i].style.display = "none";
+          }
+
+          const tabs = document.querySelectorAll(".tab");
+          for (i = 0; i < camps.length; i++) {
+            tabs[i].className = tabs[i].className.replace(" active", "");
+          }
+
+          document.querySelector(`[data-tab="${index}"]`).style.display =
+            "block";
+          event.currentTarget.className += " active";
+        }
+
+        function openSubTab(event, index) {
+          const camps = document.querySelectorAll(".camp-group");
+          for (let i = 0; i < camps.length; i++) {
+            camps[i].style.display = "none";
+          }
+
+          const tabs = document.querySelectorAll(".sub-tab");
+          for (i = 0; i < camps.length; i++) {
+            tabs[i].className = tabs[i].className.replace(" active", "");
+          }
+
+          document.querySelector(`[data-subtab="${index}"]`).style.display =
+            "block";
+          event.currentTarget.className += " active";
+        }
+
+        function sortBy(property, event) {
+          const camp = event.currentTarget.parentNode.parentNode;
+          const rows = camp.querySelector(".rows");
+          const participants = Array.from(rows.querySelectorAll(".row"));
+          participants.sort((p1, p2) => {
+            return JSON.parse(p1.dataset.participant)[property] >
+              JSON.parse(p2.dataset.participant)[property]
+              ? -1
+              : 1;
+          });
+
+          const sortUp = event.currentTarget.className.includes("sortUp");
+          if (sortUp) {
+            participants.reverse();
+          }
+
+          const sortBys = camp.querySelectorAll(".header span");
+          for (i = 0; i < sortBys.length; i++) {
+            sortBys[i].className = sortBys[i].className
+              .replace(" sortUp", "")
+              .replace(" sortDown", "");
+          }
+          event.currentTarget.className += sortUp ? " sortDown" : " sortUp";
+
+          for (let i = 0; i < participants.length; i++) {
+            rows.appendChild(participants[i]);
+          }
+        }
+
+        function toggleParticipant(event) {
+          const row = event.currentTarget.parentNode;
+          const columns = row.querySelectorAll("span");
+          columns.forEach((c) => {
+            c.style.display = c.style.display == "block" ? "" : "block";
+          });
+        }
+      </script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+  </body>
+</html>
