@@ -18,7 +18,8 @@
     "vcards-js": "^2.10.0"
   },
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "deploy": "./deploy.sh"
   },
   "nodemonConfig": {
     "ext": "css,html,js,handlebars"
