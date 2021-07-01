@@ -12,18 +12,32 @@
     <div class="container">
       <h1>Vinea++</h1>
       <button onclick="reset()">Data verversen</button>
-      <p class="tip">Klik op een kolom om te sorteren, zoals leeftijd of naam. Ook heel handig voor dieet en gezondheid.</p>
+      <p class="tip">
+        Klik op een kolom om te sorteren, zoals leeftijd of naam. Ook heel
+        handig voor dieet en gezondheid.
+      </p>
+      <p class="tip">
+        Je kunt reisleiding als contact toevoegen op je telefoon: klik op de download-knop en open het bestand met je Contacten-app.
+      </p>
       <div class="handlebars-template">
         <div class="tabs">
           {{#each data}}
-          <div class="tab" onclick="openTab(event, {{@index}})">{{@key}}</div>
+          <div class="tab" onclick="openTab(event, {{@index}})">
+            {{this.name}}
+          </div>
           {{/each}}
         </div>
 
         {{#each data}}
         <div class="camp" data-tab="{{@index}}">
           <div class="sub-tabs">
-            {{#each this}}
+            <div
+              class="sub-tab guides"
+              onClick="openSubTab(event, '{{@index}},guides')"
+            >
+              Reisleiding
+            </div>
+            {{#each this.groups}}
             <div
               class="sub-tab"
               onclick="openSubTab(event, '{{@../index}},{{@index}}')"
@@ -33,7 +47,27 @@
             {{/each}}
           </div>
           <div class="camp-groups">
-            {{#each this}}
+            <div class="camp-group" data-subtab="{{@index}},guides">
+              <div class="header">
+                <span>Naam</span>
+                <span>Email</span>
+                <span>Telefoon</span>
+                <span>Download contact</span>
+                <span>Kamp</span>
+              </div>
+              <div class="rows">
+                {{#each this.guides}}
+                <div class="row">
+                  <span onclick="toggleParticipant(event)">{{this.name}}</span>
+                  <span>{{this.email}}</span>
+                  <span><a href="tel:{{this.phone}}">{{this.phone}}</a></span>
+                  <span class="download"><a href="/contact/{{this.name}}/{{this.email}}/{{this.phone}}" class="button">Download</a></span>
+                  <span>{{this.camp}}</span>
+                </div>
+                {{/each}}
+              </div>
+            </div>
+            {{#each this.groups}}
             <div class="camp-group" data-subtab="{{@../index}},{{@index}}">
               <div class="meta">
                 <span>Aantal deelnemers: {{this.participantCount}}</span>
@@ -64,10 +98,14 @@
               <div class="rows">
                 {{#each this.participants}}
                 <div class="row" data-participant="{{this.json}}">
-                  <span onclick="toggleParticipant(event)">{{this.naam}} {{#if this.jarig}}<span class="jarig">🎉</span>{{/if}}</span>
+                  <span onclick="toggleParticipant(event)"
+                    >{{this.naam}} {{#if this.jarig}}<span class="jarig"
+                      >🎉</span
+                    >{{/if}}</span
+                  >
                   <span>{{this.adres}}</span>
-                  <span>{{this.telefoon}}</span>
-                  <span>{{this.noodnummer}}</span>
+                  <span><a href="tel:{{this.telefoon}}">{{this.telefoon}}</a></span>
+                  <span>{{#if this.noodnummer}}<a href="tel:{{this.noodnummer}}">{{this.noodnummer}}</a>{{else}}Onbekend{{/if}}</span>
                   <span>{{this.geslacht}}</span>
                   <span>{{this.geboorteDatum}}</span>
                   <span>{{this.leeftijd}}</span>

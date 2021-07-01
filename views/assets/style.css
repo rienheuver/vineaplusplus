@@ -47,6 +47,12 @@ button {
   border-radius: var(--border-radius);
   font-weight: bold;
   cursor: pointer;
+  text-decoration: none;
+}
+
+a:not(.button) {
+  color: var(--main-colour);
+  text-decoration: none;
 }
 
 .loader {
@@ -110,6 +116,10 @@ form button {
 }
 .sub-tab {
   background-color: var(--light-grey);
+}
+.sub-tab.guides {
+  background-color: var(--highlight-colour);
+  color: black;
 }
 
 .tab.active, .sub-tab.active {
@@ -180,6 +190,10 @@ form button {
 
 .jarig {
   font-size: 2rem;
+}
+
+span.download {
+  margin: .2rem 0;
 }
 
 @media (max-width: 1200px) {

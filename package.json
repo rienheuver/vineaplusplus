@@ -14,7 +14,8 @@
     "express-handlebars": "^5.1.0",
     "nodemon": "^2.0.4",
     "normalize.css": "^8.0.1",
-    "puppeteer": "^5.2.1"
+    "puppeteer": "^5.2.1",
+    "vcards-js": "^2.10.0"
   },
   "scripts": {
     "start": "nodemon index.js"

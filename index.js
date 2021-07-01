@@ -25,16 +25,19 @@ app.get("/data", async (req, res) => {
 
 app.post("/camps", async (req, res) => {
   if (req.body.trust && req.body.trust === "yes") {
-    const data = await getData(req.body.username, req.body.password, req.body.combine);
+    const data = await getData(
+      req.body.username,
+      req.body.password,
+      req.body.combine
+    );
     const camps = JSON.stringify(data);
 
-    if (Object.keys(data).length === 0) {
+    if (data.length === 0) {
       res.render("home", {
         error: "Geen kampen gevonden. Misschien verkeerde logingegevens?",
       });
     } else {
       res.render("storage", { camps });
-      // res.render("data", { data });
     }
   } else {
     res.render("home", {
@@ -42,6 +45,35 @@ app.post("/camps", async (req, res) => {
         "Als je Rien niet vertrouwt zal hij ook je gegevens niet gebruiken. Maar dan heeft deze app verder ook weinig nut...",
     });
   }
+});
+
+app.get("/contact/:name/:email/:phone?", function (req, res) {
+  console.log(req.params);
+
+  var vCardsJS = require("vcards-js");
+
+  //create a new vCard
+  var vCard = vCardsJS();
+
+  //set properties
+  const nameParts = req.params.name.split(" ");
+  vCard.firstName = nameParts[0];
+  vCard.middleName =
+    nameParts.length > 2
+      ? nameParts.slice(1, nameParts.length - 1).concat(" ")
+      : "";
+  vCard.lastName = nameParts[nameParts.length - 1];
+  vCard.homePhone = req.params.phone ?? "-";
+  vCard.email = req.params.email;
+  vCard.organization = "Vinea";
+
+  //set content-type and disposition including desired filename
+  const filename = req.params.name.replace(/ /g, "_");
+  res.set("Content-Type", `text/vcard; name="${filename}.vcf"`);
+  res.set("Content-Disposition", `inline; filename="${filename}.vcf"`);
+
+  //send the response
+  res.send(vCard.getFormattedString());
 });
 
 app.listen(6363, () => {

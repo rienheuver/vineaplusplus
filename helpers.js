@@ -30,21 +30,43 @@ module.exports.getData = async function (username, password, combine = false) {
   let campsMeta = await page.evaluate(() => {
     return Array.from(document.querySelectorAll(".order_box > a[href]")).map(
       (a) => {
-        const parts = a.href.split("/");
-        return [parts[parts.length - 1], a.innerText];
+        const meta = {};
+        const linkParts = a.href.split("/");        
+        meta.name = a.innerText;
+        meta.id = linkParts[linkParts.length - 1];
+
+        meta.guides = Array.from(a.nextElementSibling.nextElementSibling.querySelectorAll(".info_order")).map(g => {
+          const raw = g.querySelector('[data-th="naam"]').innerText;
+          const guide = {};
+          if (raw.includes('T:')) {
+            guide.name = raw.split('T:')[0].trim();
+            guide.email = raw.split('T:')[1].split('M:')[0].trim();
+            guide.phone = raw.split('T:')[1].split('M:')[1].trim();
+          } else {
+            guide.name = raw.trim();
+            guide.email = '';
+            guide.phone = '';
+          }
+          guide.camp = g.querySelector('[data-th="reis"]').innerText.trim();
+          return guide;
+        });
+
+        return meta;
       }
     );
   });
 
-  // campsMeta = [campsMeta[0]];
-
-  const camps = {};
-  for (const c of campsMeta) {
-    camps[c[1]] = {};
+  const camps = [];
+  for (const campMeta of campsMeta) {
+    const camp = {
+      name: campMeta.name,
+      guides: campMeta.guides,
+      groups: {}
+    };
     console.log(
-      `Getting regular data on camp with ID ${c[0]} at https://www.mijnreisleiding.nl/participantlist/${c[0]}`
+      `Getting regular data on camp with ID ${campMeta.id} at https://www.mijnreisleiding.nl/participantlist/${campMeta.id}`
     );
-    await page.goto(`https://www.mijnreisleiding.nl/participantlist/${c[0]}`, {
+    await page.goto(`https://www.mijnreisleiding.nl/participantlist/${campMeta.id}`, {
       waitUntil: "networkidle2",
     });
     const data = await page.evaluate(() => {
@@ -73,11 +95,11 @@ module.exports.getData = async function (username, password, combine = false) {
     });
 
     console.log(
-      `Getting additional data on camp with ID ${c[0]} at https://www.mijnreisleiding.nl/participantlistadditional/${c[0]}`
+      `Getting additional data on camp with ID ${campMeta.id} at https://www.mijnreisleiding.nl/participantlistadditional/${campMeta.id}`
     );
 
     await page.goto(
-      `https://www.mijnreisleiding.nl/participantlistadditional/${c[0]}`,
+      `https://www.mijnreisleiding.nl/participantlistadditional/${campMeta.id}`,
       {
         waitUntil: "networkidle2",
       }
@@ -124,10 +146,10 @@ module.exports.getData = async function (username, password, combine = false) {
       );
     });
 
-    const campGroups = [];
+    const campGroupNames = [];
     const fullData = [];
     const datesRegex = /(\d+)-(\d+)-(\d+)/g;
-    const startEnd = [...c[1].matchAll(datesRegex)];
+    const startEnd = [...camp.name.matchAll(datesRegex)];
     const timePartsStart = startEnd[0][0].split("-").map((t) => parseInt(t));
     const startDate = new Date(
       timePartsStart[2],
@@ -170,7 +192,7 @@ module.exports.getData = async function (username, password, combine = false) {
       );
       
       person.telefoon = person.naam_contactgevegens[1];
-      person.noodnummer = person.naam_contactgevegens.length > 3 ? person.naam_contactgevegens[2] : 'Onbekend';
+      person.noodnummer = person.naam_contactgevegens.length > 3 ? person.naam_contactgevegens[2].split('NOOD')[1].trim() : false;
 
       person.naam = person.naam[0].toUpperCase() + person.naam.substring(1);
 
@@ -185,8 +207,8 @@ module.exports.getData = async function (username, password, combine = false) {
         }
       });
 
-      if (!campGroups.includes(person.vakantie)) {
-        campGroups.push(person.vakantie);
+      if (!campGroupNames.includes(person.vakantie)) {
+        campGroupNames.push(person.vakantie);
       }
 
       person.json = JSON.stringify(person);
@@ -195,29 +217,28 @@ module.exports.getData = async function (username, password, combine = false) {
     }
 
     // camps.push(fullData);
-    for (const campGroup of campGroups) {
-      const camp = {};
-      camp.participants = fullData.filter(
-        (person) => person.vakantie == campGroup
+    for (const cg of campGroupNames) {
+      const campGroup = {};
+      campGroup.participants = fullData.filter(
+        (person) => person.vakantie == cg
       );
-      setCampMeta(camp);
-      camps[c[1]][campGroup] = camp;
+      setCampMeta(campGroup);
+      camp.groups[cg] = campGroup;
     }
 
     if (combine) {
-      const camp = {
+      const campGroup = {
         participants: [],
       };
-      for (const group of Object.keys(camps[c[1]])) {
-        camp.participants = camp.participants.concat(
-          ...camps[c[1]][group].participants
+      for (const group of Object.keys(camp.groups)) {
+        campGroup.participants = campGroup.participants.concat(
+          ...camp.groups[group].participants
         );
       }
-      setCampMeta(camp);
-      camps[c[1]] = {
-        "Alle kampen": camp,
-      };
+      setCampMeta(campGroup);
+      camps.groups.groups["Alle kampen"] = campGroup;
     }
+    camps.push(camp);
   }
 
   console.log(`Jobs done, got data on ${campsMeta.length} camps`);
