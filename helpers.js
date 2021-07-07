@@ -236,7 +236,9 @@ module.exports.getData = async function (username, password, combine = false) {
         );
       }
       setCampMeta(campGroup);
-      camps.groups.groups["Alle kampen"] = campGroup;
+      camp.groups = {
+        "Alle kampen": campGroup
+      };
     }
     camps.push(camp);
   }

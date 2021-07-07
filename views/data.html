@@ -10,14 +10,22 @@
 
   <body>
     <div class="container">
-      <h1>Vinea++</h1>
+      <div class="header">
+        <h1>Vinea++</h1>
+        <span
+          class="powered-by"
+          data-hover-text="Ik ben inmiddels 10 jaar reisleider en heb een master in cyber security. Je kunt er dus redelijkerwijs vanuit gaan dat deze applicatie goed met je gegevens omgaat."
+          >Ontwikkeld door Rien (Heuver)</span
+        >
+      </div>
       <button onclick="reset()">Data verversen</button>
       <p class="tip">
         Klik op een kolom om te sorteren, zoals leeftijd of naam. Ook heel
         handig voor dieet en gezondheid.
       </p>
       <p class="tip">
-        Je kunt reisleiding als contact toevoegen op je telefoon: klik op de download-knop en open het bestand met je Contacten-app.
+        Je kunt reisleiding als contact toevoegen op je telefoon: klik op de
+        download-knop en open het bestand met je Contacten-app.
       </p>
       <div class="handlebars-template">
         <div class="tabs">
@@ -61,7 +69,13 @@
                   <span onclick="toggleParticipant(event)">{{this.name}}</span>
                   <span>{{this.email}}</span>
                   <span><a href="tel:{{this.phone}}">{{this.phone}}</a></span>
-                  <span class="download"><a href="/contact/{{this.name}}/{{this.email}}/{{this.phone}}" class="button">Download</a></span>
+                  <span class="download"
+                    ><a
+                      href="/contact/{{this.name}}/{{this.email}}/{{this.phone}}"
+                      class="button"
+                      >Download</a
+                    ></span
+                  >
                   <span>{{this.camp}}</span>
                 </div>
                 {{/each}}
@@ -105,8 +119,14 @@
                     >{{/if}}</span
                   >
                   <span>{{this.adres}}</span>
-                  <span><a href="tel:{{this.telefoon}}">{{this.telefoon}}</a></span>
-                  <span>{{#if this.noodnummer}}<a href="tel:{{this.noodnummer}}">{{this.noodnummer}}</a>{{else}}Onbekend{{/if}}</span>
+                  <span
+                    ><a href="tel:{{this.telefoon}}">{{this.telefoon}}</a></span
+                  >
+                  <span
+                    >{{#if this.noodnummer}}<a href="tel:{{this.noodnummer}}"
+                      >{{this.noodnummer}}</a
+                    >{{else}}Onbekend{{/if}}</span
+                  >
                   <span>{{this.geslacht}}</span>
                   <span>{{this.geboorteDatum}}</span>
                   <span>{{this.leeftijd}}</span>
