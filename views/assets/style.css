@@ -28,6 +28,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .powered-by {
@@ -35,7 +36,7 @@ h1 {
   justify-content: center;
   align-items: center;
   position: absolute;
-  right: 3rem;
+  right: 1rem;
   color: var(--second-colour);
   font-weight: bold;
 }
@@ -53,8 +54,8 @@ h1 {
   color: black;
   border-radius: 5px;
   border: 1px solid black;
-  padding: .5rem;
-  font-size: .8rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
 }
 
 .powered-by:hover {
@@ -192,6 +193,11 @@ form button {
   color: white;
 }
 
+.files {
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 1rem;
+}
+
 .sortDown,
 .sortUp {
   background-color: var(--second-colour);
@@ -251,7 +257,7 @@ span.download {
     min-width: unset;
   }
 
-  .tabs {
+  .tabs, .sub-tabs {
     flex-direction: column;
   }
 
@@ -261,5 +267,13 @@ span.download {
 
   .camp-group .row {
     flex-direction: column;
+  }
+
+  .powered-by {
+    top: 0;
+  }
+
+  .files {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

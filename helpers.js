@@ -31,21 +31,25 @@ module.exports.getData = async function (username, password, combine = false) {
     return Array.from(document.querySelectorAll(".order_box > a[href]")).map(
       (a) => {
         const meta = {};
-        const linkParts = a.href.split("/");        
+        const linkParts = a.href.split("/");
         meta.name = a.innerText;
         meta.id = linkParts[linkParts.length - 1];
 
-        meta.guides = Array.from(a.nextElementSibling.nextElementSibling.querySelectorAll(".info_order")).map(g => {
+        meta.guides = Array.from(
+          a.nextElementSibling.nextElementSibling.querySelectorAll(
+            ".info_order"
+          )
+        ).map((g) => {
           const raw = g.querySelector('[data-th="naam"]').innerText;
           const guide = {};
-          if (raw.includes('T:')) {
-            guide.name = raw.split('T:')[0].trim();
-            guide.email = raw.split('T:')[1].split('M:')[0].trim();
-            guide.phone = raw.split('T:')[1].split('M:')[1].trim();
+          if (raw.includes("T:")) {
+            guide.name = raw.split("T:")[0].trim();
+            guide.email = raw.split("T:")[1].split("M:")[0].trim();
+            guide.phone = raw.split("T:")[1].split("M:")[1].trim();
           } else {
             guide.name = raw.trim();
-            guide.email = '';
-            guide.phone = '';
+            guide.email = "";
+            guide.phone = "";
           }
           guide.camp = g.querySelector('[data-th="reis"]').innerText.trim();
           return guide;
@@ -61,14 +65,38 @@ module.exports.getData = async function (username, password, combine = false) {
     const camp = {
       name: campMeta.name,
       guides: campMeta.guides,
-      groups: {}
+      groups: {},
+      files: []
     };
+
+    console.log(
+      `Getting file links from camp with ID ${campMeta.id} at https://www.mijnreisleiding.nl/tripoverview/${campMeta.id}`
+    );
+    await page.goto(
+      `https://www.mijnreisleiding.nl/tripoverview/${campMeta.id}`,
+      {
+        waitUntil: "networkidle2",
+      }
+    );
+    camp.files = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll(".downloads a[href")).map(
+        (link) => {
+          const url = link.href;
+          const name = link.innerText;
+          return { url, name };
+        }
+      );
+    });
+
     console.log(
       `Getting regular data on camp with ID ${campMeta.id} at https://www.mijnreisleiding.nl/participantlist/${campMeta.id}`
     );
-    await page.goto(`https://www.mijnreisleiding.nl/participantlist/${campMeta.id}`, {
-      waitUntil: "networkidle2",
-    });
+    await page.goto(
+      `https://www.mijnreisleiding.nl/participantlist/${campMeta.id}`,
+      {
+        waitUntil: "networkidle2",
+      }
+    );
     const data = await page.evaluate(() => {
       const headers = Array.from(
         document.querySelectorAll(".table_naw thead th")
@@ -190,9 +218,12 @@ module.exports.getData = async function (username, password, combine = false) {
       person.leeftijd = Math.abs(
         new Date(new Date() - birthDate.getTime()).getUTCFullYear() - 1970
       );
-      
+
       person.telefoon = person.naam_contactgevegens[1];
-      person.noodnummer = person.naam_contactgevegens.length > 3 ? person.naam_contactgevegens[2].split('NOOD')[1].trim() : false;
+      person.noodnummer =
+        person.naam_contactgevegens.length > 3
+          ? person.naam_contactgevegens[2].split("NOOD")[1].trim()
+          : false;
 
       person.naam = person.naam[0].toUpperCase() + person.naam.substring(1);
 
@@ -237,7 +268,7 @@ module.exports.getData = async function (username, password, combine = false) {
       }
       setCampMeta(campGroup);
       camp.groups = {
-        "Alle kampen": campGroup
+        "Alle kampen": campGroup,
       };
     }
     camps.push(camp);

@@ -45,6 +45,13 @@
             >
               Reisleiding
             </div>
+            <div
+              class="sub-tab files"
+              onClick="openSubTab(event, '{{@index}},files')"
+            >
+              Handleiding, locatie-info, etc.
+            </div>
+
             {{#each this.groups}}
             <div
               class="sub-tab"
@@ -78,6 +85,13 @@
                   >
                   <span>{{this.camp}}</span>
                 </div>
+                {{/each}}
+              </div>
+            </div>
+            <div class="camp-groups">
+              <div class="camp-group files" data-subtab="{{@index}},files">
+                {{#each this.files}}
+                <a href="{{this.url}}" class="button">{{this.name}}</a>
                 {{/each}}
               </div>
             </div>
@@ -176,7 +190,7 @@
           }
 
           document.querySelector(`[data-tab="${index}"]`).style.display =
-            "block";
+            "grid";
           event.currentTarget.className += " active";
         }
 
@@ -192,7 +206,7 @@
           }
 
           document.querySelector(`[data-subtab="${index}"]`).style.display =
-            "block";
+            "grid";
           event.currentTarget.className += " active";
         }
 
