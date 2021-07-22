@@ -40,17 +40,18 @@ module.exports.getData = async function (username, password, combine = false) {
             ".info_order"
           )
         ).map((g) => {
-          const raw = g.querySelector('[data-th="naam"]').innerText;
+          const basicInfo = g.querySelector('[data-th="naam"]').innerText;
           const guide = {};
-          if (raw.includes("T:")) {
-            guide.name = raw.split("T:")[0].trim();
-            guide.email = raw.split("T:")[1].split("M:")[0].trim();
-            guide.phone = raw.split("T:")[1].split("M:")[1].trim();
+          if (basicInfo.includes("T:")) {
+            guide.name = basicInfo.split("T:")[0].trim();
+            guide.email = basicInfo.split("T:")[1].split("M:")[0].trim();
+            guide.phone = basicInfo.split("T:")[1].split("M:")[1].trim();
           } else {
-            guide.name = raw.trim();
+            guide.name = basicInfo.trim();
             guide.email = "";
             guide.phone = "";
           }
+          guide.function = g.querySelector('[data-th="functie"]').innerText.trim().split('  ')[0];
           guide.camp = g.querySelector('[data-th="reis"]').innerText.trim();
           return guide;
         });
